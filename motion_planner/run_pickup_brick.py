@@ -24,7 +24,7 @@ if __name__ == '__main__':
     plan_list, gripper_setpoint_list = GeneratePickupBrickPlansByTrajectory()
 
     # Generate with RRT
-    plan_list, gripper_setpoint_list = GeneratePickupBrickPlansByRRT()
+    # plan_list, gripper_setpoint_list = GeneratePickupBrickPlansByRRT()
 
     # Simulation
     q0 = [0, 0, 0, -1.75, 0, 1.0, 0]
