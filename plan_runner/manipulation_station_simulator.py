@@ -29,26 +29,33 @@ def RenderSystemWithGraphviz(system, output_file="system_view.gz"):
 
 class ManipulationStationSimulator:
     def __init__(self, time_step,
-                 object_file_path=None,
-                 object_base_link_name=None,
-                 X_WObject=X_WObject_default,):
-        self.object_base_link_name = object_base_link_name
+                 object_file_paths=None,
+                 object_base_link_names=None,
+                 X_WObject_list=(X_WObject_default,)):
         self.time_step = time_step
 
         # Finalize manipulation station by adding manipuland.
         self.station = ManipulationStation(self.time_step)
         self.station.AddCupboard()
         self.plant = self.station.get_mutable_multibody_plant()
-        if object_file_path is not None:
-            self.object = AddModelFromSdfFile(
-                file_name=object_file_path,
-                model_name="object",
-                plant=self.station.get_mutable_multibody_plant(),
-                scene_graph=self.station.get_mutable_scene_graph() )
+
+        self.objects = []
+        if object_file_paths is not None:
+            for i, file_path in enumerate(object_file_paths):
+                self.objects.append(AddModelFromSdfFile(
+                    file_name=file_path,
+                    model_name="object_{}".format(i),
+                    plant=self.plant,
+                    scene_graph=self.station.get_mutable_scene_graph()
+                ))
+
         self.station.Finalize()
 
+        # Object base link names for reference
+        self.object_base_link_names = object_base_link_names
+
         # Initial pose of the object
-        self.X_WObject = X_WObject
+        self.X_WObject_list = X_WObject_list
 
     def RunSimulation(self, plans_list, gripper_setpoint_list,
                       extra_time=0, real_time_rate=1.0, q0_kuka=np.zeros(7), is_visualizing=True):
@@ -153,11 +160,17 @@ class ManipulationStationSimulator:
         right_hinge_joint.set_angle(
             context=self.station.GetMutableSubsystemContext(self.plant, context), angle=0.001)
 
-        # set initial pose of the object
-        if self.object_base_link_name is not None:
-            self.plant.tree().SetFreeBodyPoseOrThrow(
-               self.plant.GetBodyByName(self.object_base_link_name, self.object),
-                self.X_WObject, self.station.GetMutableSubsystemContext(self.plant, context))
+        # set initial pose of the objects
+        if self.object_base_link_names is not None:
+            for link_name, object, X_WObject in zip(self.object_base_link_names,
+                                                    self.objects,
+                                                    self.X_WObject_list):
+                self.plant.tree().SetFreeBodyPoseOrThrow(
+                    self.plant.GetBodyByName(link_name, object),
+                    X_WObject, self.station.GetMutableSubsystemContext(
+                        self.plant, context
+                    )
+                )
 
         simulator.set_publish_every_time_step(False)
         simulator.set_target_realtime_rate(real_time_rate)

@@ -8,7 +8,6 @@ from pydrake.math import RotationMatrix, RollPitchYaw
 
 
 p_WQ_home = np.array([0.5, 0, 0.41])
-p_WC_box = np.array([0.6, 0.05/2, 0.025])
 
 station = ManipulationStation()
 station.Finalize()
@@ -46,13 +45,13 @@ X_EEa = GetEndEffectorWorldAlignedFrame()
 R_EEa = RotationMatrix(X_EEa.rotation())
 p_EQ = GetEndEffectorWorldAlignedFrame().multiply(np.array([0, 0, 0.09]))
 
-def GeneratePickupBrickPlansByTrajectory(is_printing=True):
+def GeneratePickupBrickPlansByTrajectory(p_goal, is_printing=True):
     plan_list, gripper_setpoint_list, q_final_full = \
-        GeneratePickupBrickPlans(is_printing=is_printing)
+        GeneratePickupBrickPlans(p_goal,is_printing=is_printing)
     return plan_list, gripper_setpoint_list
 
 
-def GeneratePickupBrickPlans(is_printing=True):
+def GeneratePickupBrickPlans(p_goal, is_printing=True):
 
     def InterpolateStraightLine(p_WQ_start, p_WQ_end, num_knot_points, i):
         return (p_WQ_end - p_WQ_start) / num_knot_points * (i+1) + p_WQ_start
@@ -61,7 +60,7 @@ def GeneratePickupBrickPlans(is_printing=True):
 
     q_home_full = GetHomeConfiguration(is_printing)
     p_WQ_start = p_WQ_home
-    p_WQ_end = p_WC_box
+    p_WQ_end = p_goal
     qtraj_move_to_box, q_knots_full = InverseKinPointwise(
         p_WQ_start, p_WQ_end, duration=5.0,
         num_knot_points=num_knot_points, q_initial_guess=q_home_full,

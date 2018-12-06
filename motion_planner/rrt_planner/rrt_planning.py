@@ -49,7 +49,7 @@ class RRT:                      # RRT Tree
           (child_closest, child_distance) = recur(child, depth+1)
           if child_distance < distance:
             closest = child_closest
-            child_distance = child_distance
+            distance = child_distance
       return closest, distance
     return recur(self.root)[0]
 
@@ -303,11 +303,15 @@ class Problem:                    # defines a motion-planning problem
       neighbor = rrt.nearest(sample)
       path = self.safe_path(neighbor.value, sample)
       if len(path) > 1:
-        rrt.add_configuration(neighbor, path[-1])
+        child_node = rrt.add_configuration(neighbor, path[0])
+        for p in path[1:]:
+          child_node = rrt.add_configuration(child_node, p)
+        # rrt.add_configuration(neighbor, path[-1])
         if path[-1] == self.goal:
           return self.bfs(rrt, self.goal)
     return None
     #########################
+
 
   @staticmethod
   def construct_path(node):
