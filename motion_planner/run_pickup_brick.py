@@ -53,3 +53,10 @@ if __name__ == '__main__':
         plan_list, gripper_setpoint_list, extra_time=0.0, real_time_rate=1.0, q0_kuka=q0)
     PlotExternalTorqueLog(iiwa_external_torque_log)
     PlotIiwaPositionLog(iiwa_position_command_log, iiwa_position_measured_log)
+
+
+    # ans = raw_input("You sure you want to run for real?: y/n ")
+    # if ans == "y":
+    #     print("Let's go")
+    #     manip_station_sim.RunRealRobot(
+    #         plan_list, gripper_setpoint_list)
