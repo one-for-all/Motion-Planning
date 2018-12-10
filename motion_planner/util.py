@@ -141,7 +141,6 @@ class Util:
         return self.tree.CalcRelativeTransform(self.object_context, self.world_frame,
                                                self.gripper_frame)
 
-
     def set_wsg_position(self, q):
         """
         :param q: scalar which denotes how open the gripper is

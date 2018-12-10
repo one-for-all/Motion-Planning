@@ -39,13 +39,13 @@ class ManipStationPlanRunner(LeafSystem):
         # plan_list[0].traj.value(0)
         kuka_plans.insert(0, JointSpacePlan())
         gripper_setpoint_list.insert(0, 0.055)
-        self.move_to_home_duration_sec = 6.0
+        self.move_to_home_duration_sec = 1.0  # 6.0
         kuka_plans[0].duration = self.move_to_home_duration_sec
 
         # Add a five-second zero order hold to hold the current position of the robot
         kuka_plans.insert(0, JointSpacePlan())
         gripper_setpoint_list.insert(0, 0.055)
-        self.zero_order_hold_duration_sec = 3.0
+        self.zero_order_hold_duration_sec = 1.0  # 3.0
         kuka_plans[0].duration = self.zero_order_hold_duration_sec
 
         assert len(kuka_plans) == len(gripper_setpoint_list)
