@@ -15,12 +15,12 @@ if __name__ == '__main__':
     # Parse commandline arguments
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "-a", "--algorithm", type=str, default="lazySP",
-        choices=['RRT', 'RRTStar', 'lazySP', 'trajectory'],
+        "-a", "--algorithm", type=str, default="LazySP",
+        choices=['RRT', 'RRTStar', 'LazySP', 'trajectory'],
         help="Specify the algorithm used for motion planning"
     )
     parser.add_argument(
-        "-m", "--max_iter", type=int, default=1000,
+        "-m", "--max_iter", type=int, default=200,
         help="Specify the maximum iterations the algorithm is allowed to run"
     )
     args = parser.parse_args()
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     elif algo == 'RRTStar':
         # Generate with RRT Star
         plan_list, gripper_setpoint_list = motion_planning.rrt(star=True, max_iters=max_iter)
-    elif algo == 'lazySP':
+    elif algo == 'LazySP':
         # Generate with lazySP
         plan_list, gripper_setpoint_list = motion_planning.lazy_sp(max_iters=max_iter)
     else:
@@ -73,8 +73,8 @@ if __name__ == '__main__':
     iiwa_position_command_log, iiwa_position_measured_log, iiwa_external_torque_log, \
         state_log = manip_station_sim.RunSimulation(
         plan_list, gripper_setpoint_list, extra_time=0.0, real_time_rate=1.0, q0_kuka=q0)
-    PlotExternalTorqueLog(iiwa_external_torque_log)
-    PlotIiwaPositionLog(iiwa_position_command_log, iiwa_position_measured_log)
+    # PlotExternalTorqueLog(iiwa_external_torque_log)
+    # PlotIiwaPositionLog(iiwa_position_command_log, iiwa_position_measured_log)
 
 
     # ans = raw_input("You sure you want to run for real?: y/n ")

@@ -267,8 +267,8 @@ class ConfigurationSpace:
         :return: distance metric in the configuration space
         """
         # return np.linalg.norm(np.array(one) - np.array(two))
-        # a = self.util.FK(one)
-        # b = self.util.FK(two)
+        # a = self.util.FK(one).translation()
+        # b = self.util.FK(two).translation()
         # return np.linalg.norm(a - b)
         diff = np.array(one) - np.array(two)
         diff *= np.array([7, 6, 5, 4, 3, 2, 1])
@@ -458,14 +458,21 @@ class MotionPlanning:
             path = safe_path(cspace, neighbor.value, sample, util)
             if len(path) > 1:
                 q_end = path[-1]
+                # if np.all(path[-1] == sample):
+                #     q_end = path[-1]
+                # else:
+                #     if len(path) > 10:
+                #         q_end = path[-10]
+                #     else:
+                #         continue
 
                 q_new_node = neighbor
-                add_middle_nodes = False
+                add_middle_nodes = not star
                 if add_middle_nodes:
                     middle_path = path[1:-1:10]
                 else:
                     middle_path = []
-                for q in middle_path + [path[-1]]:
+                for q in middle_path + [q_end]:
                     if not star:
                         q_new_node = self.rrt_extend(rrt, q_new_node, q)
                     else:
