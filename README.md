@@ -40,3 +40,9 @@ $ python motion_planner/run_reach_brick
 Its arguments include:
 * `-a {algorithm}` where `{algorithm}` could be `RRT`, `RRTStar`, and `LazySP`. Default is `LazySP`.
 * `-m {max_iter}` where `{max_iter}` is the maximum number of iterations to run. Default is `300`.
+
+## Video Demo
+Video Demos of the three algorithms deployed on real KUKA iiwa arm can be found at:
+* [RRT](https://youtu.be/6wtmm7KjOo4)
+* [RRT*](https://youtu.be/bLKYDJSxC3w)
+* [LazySP](https://youtu.be/cuNR4LerVWo)
