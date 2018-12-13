@@ -193,7 +193,6 @@ class RRT:
         return best_path, min_cost
 
 
-
 class Range:
     def __init__(self, low, high):
         """
@@ -301,7 +300,8 @@ class MotionPlanning:
     def __init__(self, q_initial, p_goal,
                  object_file_paths=None,
                  object_base_link_names=None,
-                 X_WObject_list=None):
+                 X_WObject_list=None,
+                 steps=100):
         """
         :param q_initial: initial config of the robot
         :param p_goal: goal point in World space
@@ -354,8 +354,11 @@ class MotionPlanning:
         self.util.set_iiwa_position(self.q_initial)
         self.util.set_wsg_position(0.1)
 
-        # tmp
+        # book keeping
         self.rewires = 0
+        self.edge_evaluation = 0
+        self.steps = steps
+        self.edge_evaluations = []
 
     def lazy_sp(self, max_iters=1000, goal_sample_prob=0.05, position_tolerance=0.09, duration=5):
         util = self.util
@@ -401,7 +404,7 @@ class MotionPlanning:
 
             # check for goal
             translation = util.FK(sample).translation()
-            if within_tol(translation, self.p_goal, position_tolerance):
+            if self.within_tol(translation, self.p_goal, position_tolerance):
                 q_goals.append(q_new_node)
 
         def filter(goals):
@@ -436,13 +439,12 @@ class MotionPlanning:
                 return [JointSpacePlan(qtraj)], [0.1]
 
             start, end = edge_selector(best_path, collision_free_edges)
-            if obstacle_free(cspace, start.value, end.value, util):
+            if self.obstacle_free(cspace, start.value, end.value, util):
                 collision_free_edges.append((start, end))
             else:
                 rrt.remove_edge(start, end)
 
         raise Exception("Did not find path to goal")
-
 
     def rrt(self, star=False, max_iters=1000, goal_sample_prob=0.05, position_tolerance=0.09, duration=5):
         util = self.util
@@ -455,7 +457,7 @@ class MotionPlanning:
             print("iter: ", i)
             sample = self.sample_config(util, goal_sample_prob)
             neighbor = rrt.nearest(sample)
-            path = safe_path(cspace, neighbor.value, sample, util)
+            path = self.safe_path(cspace, neighbor.value, sample, util)
             if len(path) > 1:
                 q_end = path[-1]
                 # if np.all(path[-1] == sample):
@@ -480,7 +482,7 @@ class MotionPlanning:
 
                 # check for goal
                 translation = util.FK(q_end).translation()
-                if within_tol(translation, self.p_goal, position_tolerance):
+                if self.within_tol(translation, self.p_goal, position_tolerance):
                     q_goals.append(q_new_node)
 
                 if ((not star and len(q_goals) > 0) or
@@ -500,7 +502,11 @@ class MotionPlanning:
                     qtraj = PiecewisePolynomial.Cubic(t_knots, best_path.T, np.zeros(7), np.zeros(7))
                     print("Path cost: {}".format(min_cost))
                     print("Total number of rewires: {}".format(self.rewires))
+                    if i + 1 % self.steps == 0:
+                        self.edge_evaluations.append(self.edge_evaluation)
                     return [JointSpacePlan(qtraj)], [0.1]
+                if i + 1 % self.steps == 0:
+                    self.edge_evaluations.append(self.edge_evaluation)
 
         raise Exception("Did not find path to goal")
 
@@ -513,19 +519,29 @@ class MotionPlanning:
         min_cost = rrt.cost(neighbor) + cspace.distance(neighbor.value, q_new)
         q_min_node = neighbor
         # Stores q near nodes, whether obstacle free, and dist to q_new
-        Q_near = [[q_node, False, None] for q_node in rrt.near(q_new, max_cost=10)]
+        Q_near = [[q_node, None, None] for q_node in rrt.near(q_new, max_cost=10)]
         print("num near nodes: {}".format(len(Q_near)))
 
         for i, v in enumerate(Q_near):
             q_near_node, _, _ = v
-            if obstacle_free(cspace, q_near_node.value, q_new, self.util):
-                Q_near[i][1] = True
-                dist_to_new = cspace.distance(q_near_node.value, q_new)
-                Q_near[i][2] = dist_to_new
-                cost = rrt.cost(q_near_node) + dist_to_new
-                if cost < min_cost:
+
+            dist_to_new = cspace.distance(q_near_node.value, q_new)
+            Q_near[i][2] = dist_to_new
+            cost = rrt.cost(q_near_node) + dist_to_new
+            if cost < min_cost:
+                if self.obstacle_free(cspace, q_near_node.value, q_new, self.util):
+                    Q_near[i][1] = True
                     min_cost = cost
                     q_min_node = q_near_node
+
+            # if obstacle_free(cspace, q_near_node.value, q_new, self.util):
+            #     Q_near[i][1] = True
+            #     dist_to_new = cspace.distance(q_near_node.value, q_new)
+            #     Q_near[i][2] = dist_to_new
+            #     cost = rrt.cost(q_near_node) + dist_to_new
+            #     if cost < min_cost:
+            #         min_cost = cost
+            #         q_min_node = q_near_node
 
         q_new_node = rrt.add_configuration(q_min_node, q_new)
 
@@ -534,10 +550,17 @@ class MotionPlanning:
         rewires = 0
         for q_near_node, collision_free, dist_to_new in Q_near:
             if (q_near_node != q_min_node and
-                    collision_free and
                     rrt.cost(q_near_node) > new_node_cost + dist_to_new):
-                rewires += 1
-                rrt.change_parent(q_new_node, q_near_node)
+                if collision_free or (collision_free is None and
+                                      self.obstacle_free(cspace, q_near_node.value, q_new, self.util)):
+                    rewires += 1
+                    rrt.change_parent(q_new_node, q_near_node)
+
+            # if (q_near_node != q_min_node and
+            #         collision_free and
+            #         rrt.cost(q_near_node) > new_node_cost + dist_to_new):
+            #     rewires += 1
+            #     rrt.change_parent(q_new_node, q_near_node)
         print("Num rewires: {}".format(rewires))
         self.rewires += rewires
         return q_new_node
@@ -565,24 +588,23 @@ class MotionPlanning:
                         q = q_sample
                 return q
 
+    def safe_path(self, cspace, start, end, util):
+        self.edge_evaluation += 1
+        path = cspace.path(start, end)
+        safe_path = []
+        for configuration in path:
+            if util.collision(configuration):
+                return safe_path
+            safe_path.append(configuration)
+        return safe_path
 
-def safe_path(cspace, start, end, util):
-    path = cspace.path(start, end)
-    safe_path = []
-    for configuration in path:
-        if util.collision(configuration):
-            return safe_path
-        safe_path.append(configuration)
-    return safe_path
+    def within_tol(self, test, target, tol):
+        return np.all(np.hstack((target-tol <= test, test <= target+tol)))
 
-
-def within_tol(test, target, tol):
-    return np.all(np.hstack((target-tol <= test, test <= target+tol)))
-
-
-def obstacle_free(cspace, start, end, util):
-    path = cspace.path(start, end)
-    for config in path:
-        if util.collision(config):
-            return False
-    return True
+    def obstacle_free(self, cspace, start, end, util):
+        self.edge_evaluation += 1
+        path = cspace.path(start, end)
+        for config in path:
+            if util.collision(config):
+                return False
+        return True
