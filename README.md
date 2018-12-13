@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/RobotLocomotion/6-881-examples.svg?branch=master)](https://travis-ci.org/RobotLocomotion/6-881-examples)
 -->
 
-This repository hosts the final project for [MIT 6.881 Intelligent Robot Manipulation](https://manipulation.csail.mit.edu/) during 2019 Fall.
+This repository hosts the final project for [MIT 6.881 Intelligent Robot Manipulation](https://manipulation.csail.mit.edu/) offered for 2018 Fall (09/05/2018 - 12/12/2018).
 The project uses several [tools](https://github.com/RobotLocomotion/6-881-examples) accompanying the course.
 
 ## Project Description
