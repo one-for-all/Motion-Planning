@@ -1,4 +1,4 @@
-# 6-881-examples
+# 6-881 Final Project
 [![Build Status](https://travis-ci.org/RobotLocomotion/6-881-examples.svg?branch=master)](https://travis-ci.org/RobotLocomotion/6-881-examples)
 
 This repository contains a collection of tools for interacting with robots and cameras, developed to support the Intelligent Robot Manipulation class [(MIT 6.881)](https://manipulation.csail.mit.edu/).
