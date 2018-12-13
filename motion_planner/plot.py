@@ -1,4 +1,9 @@
+# Plot the data recorded for comparison
+
 import matplotlib.pyplot as plt
+
+steps = 100
+max_iter = 1000
 
 lazy_sp_times = [4.989102125167847, 12.066282987594604, 10.153723001480103, 25.33744192123413, 23.824832916259766,
          46.098556995391846, 49.717559814453125, 54.00535202026367, 87.7180380821228, 112.72428107261658]
@@ -14,7 +19,7 @@ rrt_edge_evals = [100.0, 41.0, 158.0, 24.0, 158.0, 124.0, 24.0, 87.0, 14.0, 193.
 
 rrt_star_edge_evals = [199.0, 290.0, 613.0, 940.0, 1276.0] + [0]*5
 
-x_range = range(100, 1100, 100)
+x_range = range(steps, max_iter+steps, steps)
 plt.plot(x_range, lazy_sp_times, label="LazySP")
 plt.plot(x_range, rrt_times, label="RRT")
 plt.plot(x_range, rrt_star_times, label="RRT*")

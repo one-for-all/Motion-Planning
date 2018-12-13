@@ -16,7 +16,7 @@ env:
   - DRAKE_VERSION="latest"
 
 install:
-  - docker build -t mit6881 -f ubuntu16_04_mit6881.dockerfile --build-arg DRAKE_VERSION=$DRAKE_VERSION .
+  - docker build -t motion-planning -f ubuntu16_04_mit6881.dockerfile --build-arg DRAKE_VERSION=$DRAKE_VERSION .
 
 script:
-  - python ./docker_run.py --os linux --entrypoint /6-881-examples/run_tests.sh
+  - python ./docker_run.py --os linux --entrypoint /Motion-Planning/run_tests.sh

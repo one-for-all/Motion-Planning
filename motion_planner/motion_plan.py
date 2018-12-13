@@ -8,9 +8,9 @@ from pydrake.multibody.multibody_tree.parsing import AddModelFromSdfFile
 from pydrake.common.eigen_geometry import Isometry3
 from pydrake.trajectories import PiecewisePolynomial
 
-from util import Util
+from .util import Util
 
-from pickup_brick import JointSpacePlan
+from .reach_brick import JointSpacePlan
 
 
 class TreeNode:
@@ -73,10 +73,6 @@ class RRT:
                     if child_distance < distance:
                         closest = child_closest
                         distance = child_distance
-            # if depth >= self.max_recursion:
-            #     print("reached max recursion depth")
-            # else:
-            #     print("success finding nearest")
             return closest, distance
         return recur(self.root)[0]
 
@@ -300,8 +296,7 @@ class MotionPlanning:
     def __init__(self, q_initial, p_goal,
                  object_file_paths=None,
                  object_base_link_names=None,
-                 X_WObject_list=None,
-                 steps=100):
+                 X_WObject_list=None):
         """
         :param q_initial: initial config of the robot
         :param p_goal: goal point in World space
@@ -357,8 +352,6 @@ class MotionPlanning:
         # book keeping
         self.rewires = 0
         self.edge_evaluation = 0
-        self.steps = steps
-        self.edge_evaluations = []
 
     def lazy_sp(self, max_iters=1000, goal_sample_prob=0.05, position_tolerance=0.09, duration=5):
         util = self.util
@@ -371,7 +364,6 @@ class MotionPlanning:
             print("iter: ", i)
             sample = self.sample_config(util, goal_sample_prob)
             neighbor = rrt.nearest(sample)
-            # rrt.add_configuration(neighbor, sample)
 
             # Find best node for reaching q_new
             min_cost = rrt.cost(neighbor) + cspace.distance(neighbor.value, sample)
@@ -460,13 +452,6 @@ class MotionPlanning:
             path = self.safe_path(cspace, neighbor.value, sample, util)
             if len(path) > 1:
                 q_end = path[-1]
-                # if np.all(path[-1] == sample):
-                #     q_end = path[-1]
-                # else:
-                #     if len(path) > 10:
-                #         q_end = path[-10]
-                #     else:
-                #         continue
 
                 q_new_node = neighbor
                 add_middle_nodes = not star
@@ -487,7 +472,6 @@ class MotionPlanning:
 
                 if ((not star and len(q_goals) > 0) or
                     (star and len(q_goals) > 0 and i == max_iters-1)):
-                # if len(q_goals) > 0:
                     min_cost = None
                     best_path = None
                     for q_goal_node in q_goals:
@@ -502,11 +486,7 @@ class MotionPlanning:
                     qtraj = PiecewisePolynomial.Cubic(t_knots, best_path.T, np.zeros(7), np.zeros(7))
                     print("Path cost: {}".format(min_cost))
                     print("Total number of rewires: {}".format(self.rewires))
-                    if i + 1 % self.steps == 0:
-                        self.edge_evaluations.append(self.edge_evaluation)
                     return [JointSpacePlan(qtraj)], [0.1]
-                if i + 1 % self.steps == 0:
-                    self.edge_evaluations.append(self.edge_evaluation)
 
         raise Exception("Did not find path to goal")
 
@@ -534,15 +514,6 @@ class MotionPlanning:
                     min_cost = cost
                     q_min_node = q_near_node
 
-            # if obstacle_free(cspace, q_near_node.value, q_new, self.util):
-            #     Q_near[i][1] = True
-            #     dist_to_new = cspace.distance(q_near_node.value, q_new)
-            #     Q_near[i][2] = dist_to_new
-            #     cost = rrt.cost(q_near_node) + dist_to_new
-            #     if cost < min_cost:
-            #         min_cost = cost
-            #         q_min_node = q_near_node
-
         q_new_node = rrt.add_configuration(q_min_node, q_new)
 
         # Rewiring existing nodes
@@ -556,11 +527,6 @@ class MotionPlanning:
                     rewires += 1
                     rrt.change_parent(q_new_node, q_near_node)
 
-            # if (q_near_node != q_min_node and
-            #         collision_free and
-            #         rrt.cost(q_near_node) > new_node_cost + dist_to_new):
-            #     rewires += 1
-            #     rrt.change_parent(q_new_node, q_near_node)
         print("Num rewires: {}".format(rewires))
         self.rewires += rewires
         return q_new_node

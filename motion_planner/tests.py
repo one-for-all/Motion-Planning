@@ -1,6 +1,6 @@
 import numpy as np
 
-from motion_plan import within_tol
+from .motion_plan import within_tol
 
 
 if __name__ == "__main__":

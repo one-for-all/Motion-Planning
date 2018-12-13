@@ -8,7 +8,7 @@ from pydrake.common.eigen_geometry import Isometry3
 from plan_runner.manipulation_station_simulator import ManipulationStationSimulator
 from plan_runner.plan_utils import PlotExternalTorqueLog, PlotIiwaPositionLog
 
-from motion_planner.pickup_brick import GeneratePickupBrickPlansByTrajectory
+from motion_planner.reach_brick import GeneratePickupBrickPlansByTrajectory
 from motion_planner.motion_plan import MotionPlanning
 
 
@@ -62,6 +62,7 @@ if __name__ == '__main__':
                                      X_WObject_list=[X_WObject, X_WObstacle],)
 
     times = []
+    edge_evals = []
     for _ in range(num_runs):
         start = time.time()
         try:
@@ -81,9 +82,12 @@ if __name__ == '__main__':
             print(e)
         end = time.time()
         times.append(end-start)
+        edge_evals.append(motion_planning.edge_evaluation)
 
     print("")
     print(algo)
     print("===========================")
     print("Max Iterations: {}".format(max_iter))
     print("Average Running Time: {}".format(np.mean(times)))
+    mean_edges = np.mean(edge_evals)
+    print("edge evaluation: {}".format(mean_edges))

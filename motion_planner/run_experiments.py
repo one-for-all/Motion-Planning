@@ -6,9 +6,8 @@ from pydrake.common import FindResourceOrThrow
 from pydrake.common.eigen_geometry import Isometry3
 
 from plan_runner.manipulation_station_simulator import ManipulationStationSimulator
-from plan_runner.plan_utils import PlotExternalTorqueLog, PlotIiwaPositionLog
 
-from motion_planner.pickup_brick import GeneratePickupBrickPlansByTrajectory
+from motion_planner.reach_brick import GeneratePickupBrickPlansByTrajectory
 from motion_planner.motion_plan import MotionPlanning
 
 
@@ -63,21 +62,12 @@ if __name__ == '__main__':
     t_v = []
     e_v = []
 
-    # motion_planning = MotionPlanning(q_initial=q0,
-    #                                  p_goal=p_WC_box,
-    #                                  object_file_paths=[object_file_path, obstacle_file_path],
-    #                                  object_base_link_names=['base_link', 'base_link_cracker'],
-    #                                  X_WObject_list=[X_WObject, X_WObstacle],
-    #                                  steps=steps)
-
-
-    for iters in range(600, max_iter+100, 100):
+    for iters in range(steps, max_iter+steps, steps):
         motion_planning = MotionPlanning(q_initial=q0,
                                          p_goal=p_WC_box,
                                          object_file_paths=[object_file_path, obstacle_file_path],
                                          object_base_link_names=['base_link', 'base_link_cracker'],
-                                         X_WObject_list=[X_WObject, X_WObstacle],
-                                         steps=steps)
+                                         X_WObject_list=[X_WObject, X_WObstacle])
 
         times = []
         edge_evals = []
@@ -115,7 +105,13 @@ if __name__ == '__main__':
 
     print('')
     print("Summary:")
+    print("===========================")
+    print("{} iterations at {} iters per step for experiment".format(max_iter, steps))
+    print("{} runs for each experiment".format(num_runs))
+    print("+++++++++++++++++++++++++++")
+    print("Average running times")
     print(t_v)
+    print("Average number of edge evaluations")
     print(e_v)
     with open("{}.data".format(algo), 'w+') as f:
         f.write(str(t_v))

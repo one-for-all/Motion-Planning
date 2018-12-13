@@ -1,5 +1,5 @@
 #! /bin/bash
-cd /6-881-examples/
+cd /Motion-Planning/
 
 # Launch a fake X-server in the background
 Xvfb :100 -ac -screen 0 800x600x24 &

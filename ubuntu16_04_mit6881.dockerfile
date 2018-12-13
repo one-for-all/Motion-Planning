@@ -41,12 +41,12 @@ RUN python -m pip install -U matplotlib
 COPY ./jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
 
 # pddlstream
-RUN git clone -b master https://github.com/caelan/pddlstream.git /pddlstream
-RUN cd /pddlstream && git submodule update --init --recursive
-RUN /pddlstream/FastDownward/build.py
-ENV PYTHONPATH /pddlstream:$PYTHONPATH
+# RUN git clone -b master https://github.com/caelan/pddlstream.git /pddlstream
+# RUN cd /pddlstream && git submodule update --init --recursive
+# RUN /pddlstream/FastDownward/build.py
+# ENV PYTHONPATH /pddlstream:$PYTHONPATH
 
-ENV PYTHONPATH /6-881-examples:$PYTHONPATH
+ENV PYTHONPATH /motion-planning:$PYTHONPATH
 
 # set the terminator inside the docker container to be a different color
 RUN mkdir -p /root/.config/terminator

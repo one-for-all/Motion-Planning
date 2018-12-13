@@ -7,7 +7,7 @@ from pydrake.common.eigen_geometry import Isometry3
 from plan_runner.manipulation_station_simulator import ManipulationStationSimulator
 from plan_runner.plan_utils import PlotExternalTorqueLog, PlotIiwaPositionLog
 
-from motion_planner.pickup_brick import GeneratePickupBrickPlansByTrajectory
+from motion_planner.reach_brick import GeneratePickupBrickPlansByTrajectory
 from motion_planner.motion_plan import MotionPlanning
 
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
         help="Specify the algorithm used for motion planning"
     )
     parser.add_argument(
-        "-m", "--max_iter", type=int, default=200,
+        "-m", "--max_iter", type=int, default=300,
         help="Specify the maximum iterations the algorithm is allowed to run"
     )
     args = parser.parse_args()
@@ -68,17 +68,15 @@ if __name__ == '__main__':
         plan_list, gripper_setpoint_list = GeneratePickupBrickPlansByTrajectory(p_WC_box)
 
     # Simulation
-
     ans = raw_input("Run simulation? ")
     iiwa_position_command_log, iiwa_position_measured_log, iiwa_external_torque_log, \
         state_log = manip_station_sim.RunSimulation(
         plan_list, gripper_setpoint_list, extra_time=0.0, real_time_rate=1.0, q0_kuka=q0)
-    # PlotExternalTorqueLog(iiwa_external_torque_log)
-    # PlotIiwaPositionLog(iiwa_position_command_log, iiwa_position_measured_log)
+    PlotExternalTorqueLog(iiwa_external_torque_log)
+    PlotIiwaPositionLog(iiwa_position_command_log, iiwa_position_measured_log)
 
-
-    # ans = raw_input("You sure you want to run for real?: y/n ")
-    # if ans == "y":
-    #     print("Let's go")
-    #     manip_station_sim.RunRealRobot(
-    #         plan_list, gripper_setpoint_list)
+    ans = raw_input("You sure you want to run for real?: y/n ")
+    if ans == "y":
+        print("Let's go")
+        manip_station_sim.RunRealRobot(
+            plan_list, gripper_setpoint_list)

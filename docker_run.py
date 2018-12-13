@@ -12,7 +12,7 @@ if __name__=="__main__":
 
     parser.add_argument("--os", type=str, choices=['mac', 'linux'], required=True, help='operating system of the host machine.')
 
-    parser.add_argument("-c", "--container", type=str, default="6-881-examples", help="(optional) name of the container")
+    parser.add_argument("-c", "--container", type=str, default="Motion-Planning", help="(optional) name of the container")
 
     parser.add_argument("-d", "--dry_run", action='store_true', help="(optional) perform a dry_run, print the command that would have been executed but don't execute it.")
 
@@ -23,7 +23,7 @@ if __name__=="__main__":
     args = parser.parse_args()
     source_dir = os.getcwd()
 
-    image_name = 'mit6881'
+    image_name = 'motion-planning'
     print("running docker container derived from image %s" % image_name)
     home_directory = '/home/' + user_name
 
@@ -44,7 +44,7 @@ if __name__=="__main__":
         cmd += " -e DISPLAY=" + IP + ":0 "     
 
     cmd += " -v ~/.ssh:%(home_directory)s/.ssh " % {'home_directory': home_directory}   # mount ssh keys
-    cmd += " -v '%(source_dir)s':/6-881-examples/ " % {'source_dir': source_dir}
+    cmd += " -v '%(source_dir)s':/Motion-Planning/ " % {'source_dir': source_dir}
 
     # network settings
     if args.os == 'mac':
