@@ -15,7 +15,7 @@ This project implements and evaluates three robotic motion planning algorithms:
 The algorithms are developed in the context of the KUKA iiwa arm, using the [Drake](https://drake.mit.edu/) toolbox.
 
 ## Pre-reqs
-In the root directory of this repository, run the following command in a terminal to build a docker image that includes Drake and denpendencies for PDDLStream:
+In the root directory of this repository, run the following command in a terminal to build a docker image that includes Drake:
 ```bash
 $ docker build -t motion-planning -f ubuntu16_04_mit6881.dockerfile --build-arg DRAKE_VERSION=20181203 .
 ``` 
