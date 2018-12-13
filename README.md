@@ -1,7 +1,16 @@
-# 6-881 Final Project
+# 6-881 Final Project - Motion Planning
 [![Build Status](https://travis-ci.org/RobotLocomotion/6-881-examples.svg?branch=master)](https://travis-ci.org/RobotLocomotion/6-881-examples)
 
-This repository contains a collection of tools for interacting with robots and cameras, developed to support the Intelligent Robot Manipulation class [(MIT 6.881)](https://manipulation.csail.mit.edu/).
+This repository hosts the final project for [MIT 6.881 Intelligent Robot Manipulation](https://manipulation.csail.mit.edu/) during 2019 Fall.
+The project uses several [tools](https://github.com/RobotLocomotion/6-881-examples) accompanying the course.
+
+## Project Description
+This project implements and evaluates three robotic motion planning algorithms:
+* Rapidly-exploring Random Tree (RRT) 
+* Rapidly-exploring Random Tree Star (RRT*)
+* Lazy Shortest Path (LazySP)
+
+The algorithms are developed in the context of the KUKA iiwa arm, using the [Drake](https://drake.mit.edu/) toolbox.
 
 ## Pre-reqs
 In the root directory of this repository, run the following command in a terminal to build a docker image that includes Drake and denpendencies for PDDLStream:
