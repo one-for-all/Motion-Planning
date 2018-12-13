@@ -1,5 +1,7 @@
 # 6-881 Final Project - Motion Planning
+<!-- To Do: Add CI Integration for this project
 [![Build Status](https://travis-ci.org/RobotLocomotion/6-881-examples.svg?branch=master)](https://travis-ci.org/RobotLocomotion/6-881-examples)
+-->
 
 This repository hosts the final project for [MIT 6.881 Intelligent Robot Manipulation](https://manipulation.csail.mit.edu/) during 2019 Fall.
 The project uses several [tools](https://github.com/RobotLocomotion/6-881-examples) accompanying the course.
