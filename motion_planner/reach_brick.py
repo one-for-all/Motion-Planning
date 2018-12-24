@@ -164,6 +164,8 @@ def InverseKinPointwise(p_WQ_start, p_WQ_end, duration,
 
 
 def GetKukaQKnots(q_knots):
+    """ Get parts of q_knots that are KUKA joints
+    """
     if len(q_knots.shape) == 1:
         q_knots.resize(1, q_knots.size)
     n = q_knots.shape[0]

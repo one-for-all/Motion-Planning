@@ -354,6 +354,14 @@ class MotionPlanning:
         self.edge_evaluation = 0
 
     def lazy_sp(self, max_iters=1000, goal_sample_prob=0.05, position_tolerance=0.09, duration=5):
+        """ Motion Planning by LazySP
+        :param max_iters: max number of iterations
+        :param goal_sample_prob: probability to sample goal in each iteration
+        :param position_tolerance: tolerance in goal position
+        :param duration: duration of motion
+        :return: path found or raise error
+        """
+
         util = self.util
         cspace = self.cspace
         rrt = RRT(TreeNode(self.q_initial), cspace)
@@ -400,15 +408,27 @@ class MotionPlanning:
                 q_goals.append(q_new_node)
 
         def filter(goals):
+            """ Filter out Nones in goals
+            """
             return [g for g in goals if g is not None]
 
         def in_free_edges(path, edges):
+            """
+            :param path: list of nodes
+            :param edges: all free edges
+            :return: True if all edges between nodes are in free edges
+            """
             for s, e in zip(path[:-1], path[1:]):
                 if (s, e) not in edges:
                     return False
             return True
 
         def edge_selector(path, collision_free_edges):
+            """
+            :param path: list of nodes
+            :param collision_free_edges: list of edges
+            :return: first edge in path that is in free edges
+            """
             for s, e in zip(path[:-1], path[1:]):
                 if (s, e) not in collision_free_edges:
                     return s, e
@@ -417,9 +437,10 @@ class MotionPlanning:
         collision_free_edges = []
         while len(q_goals) > 0:
             best_path, min_cost = rrt.shortest_path(q_goals)
-            # print(best_path)
             if best_path is None:
                 break
+
+            # Get shortest path and check for collision
             q_goals = filter(q_goals)
             if in_free_edges(best_path, collision_free_edges):
                 best_path = np.array([node.value for node in best_path])
@@ -430,6 +451,7 @@ class MotionPlanning:
                 print("Total number of rewires: {}".format(self.rewires))
                 return [JointSpacePlan(qtraj)], [0.1]
 
+            # If no collision, add to free edges; otherwise, remove from tree
             start, end = edge_selector(best_path, collision_free_edges)
             if self.obstacle_free(cspace, start.value, end.value, util):
                 collision_free_edges.append((start, end))
@@ -439,6 +461,14 @@ class MotionPlanning:
         raise Exception("Did not find path to goal")
 
     def rrt(self, star=False, max_iters=1000, goal_sample_prob=0.05, position_tolerance=0.09, duration=5):
+        """ Motion Planning by RRT and RRT*
+        :param star: True if RRT*
+        :param max_iters: max number of iterations
+        :param goal_sample_prob: probability to sample goal position
+        :param position_tolerance: tolerance to goal position
+        :param duration: duration of motion
+        :return: path found or raise error
+        """
         util = self.util
         cspace = self.cspace
         rrt = RRT(TreeNode(self.q_initial), cspace)
@@ -453,6 +483,7 @@ class MotionPlanning:
             if len(path) > 1:
                 q_end = path[-1]
 
+                # If pure RRT, include intermediate points as nodes
                 q_new_node = neighbor
                 add_middle_nodes = not star
                 if add_middle_nodes:
@@ -491,9 +522,13 @@ class MotionPlanning:
         raise Exception("Did not find path to goal")
 
     def rrt_extend(self, rrt, neighbor, q_new):
+        """ Extend the tree by q_new from neighbor (RRT)
+        """
         return rrt.add_configuration(neighbor, q_new)
 
     def rrt_star_extend(self, rrt, neighbor, q_new):
+        """ Extend the tree by q_new from neighbor while doing rewiring (RRT*)
+        """
         cspace = rrt.cspace
         # Find best node for reaching q_new
         min_cost = rrt.cost(neighbor) + cspace.distance(neighbor.value, q_new)
@@ -502,6 +537,7 @@ class MotionPlanning:
         Q_near = [[q_node, None, None] for q_node in rrt.near(q_new, max_cost=10)]
         print("num near nodes: {}".format(len(Q_near)))
 
+        # Find best node to reach
         for i, v in enumerate(Q_near):
             q_near_node, _, _ = v
 
@@ -532,6 +568,8 @@ class MotionPlanning:
         return q_new_node
 
     def sample_config(self, util, goal_sample_prob):
+        """ Sample a random configuration with goal_sample_prob of sampling a goal
+        """
             prob = random()
             if prob < goal_sample_prob:
                 q_goal = None
@@ -555,6 +593,8 @@ class MotionPlanning:
                 return q
 
     def safe_path(self, cspace, start, end, util):
+        """ Get a linear-interpolated safe path from start to as close to end as possible
+        """
         self.edge_evaluation += 1
         path = cspace.path(start, end)
         safe_path = []
@@ -565,9 +605,13 @@ class MotionPlanning:
         return safe_path
 
     def within_tol(self, test, target, tol):
+        """ Check if test is close to target within tol
+        """
         return np.all(np.hstack((target-tol <= test, test <= target+tol)))
 
     def obstacle_free(self, cspace, start, end, util):
+        """ Check if linear path from start to end is collision-free
+        """
         self.edge_evaluation += 1
         path = cspace.path(start, end)
         for config in path:
